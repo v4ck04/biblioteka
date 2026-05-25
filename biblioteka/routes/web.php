@@ -5,10 +5,13 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\BorrowingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FrontendController;
 use Illuminate\Support\Facades\Route;
 
-// Redirect root to dashboard or login
-Route::get('/', fn () => redirect()->route('admin.dashboard'));
+// Public frontend
+Route::get('/', [FrontendController::class, 'home'])->name('home');
+Route::get('/books', [FrontendController::class, 'books'])->name('books.index');
+Route::get('/books/{book}', [FrontendController::class, 'show'])->name('books.show');
 
 // Auth
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
