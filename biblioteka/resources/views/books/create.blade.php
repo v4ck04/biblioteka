@@ -12,7 +12,7 @@
 
 <div class="card border-0 shadow-sm" style="max-width: 640px;">
     <div class="card-body p-4">
-        <form method="POST" action="{{ route('admin.books.store') }}">
+        <form method="POST" action="{{ route('admin.books.store') }}" enctype="multipart/form-data">
             @csrf
 
             <div class="mb-3">
@@ -62,6 +62,17 @@
                 </div>
             </div>
 
+            <div class="mb-4">
+                <label for="image" class="form-label fw-semibold">Slika naslovnice</label>
+                <input type="file" id="image" name="image" accept="image/*"
+                    class="form-control @error('image') is-invalid @enderror"
+                    onchange="previewImage(this)">
+                @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <div class="form-text">JPEG, PNG, WebP ili GIF, max 2 MB. Nije obavezno.</div>
+                <img id="image-preview" src="#" alt="Preview" class="mt-3 rounded border d-none"
+                    style="max-height: 200px; max-width: 100%; object-fit: contain;">
+            </div>
+
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-floppy me-1"></i>Sačuvaj
@@ -71,4 +82,17 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('image-preview');
+    if (input.files && input.files[0]) {
+        preview.src = URL.createObjectURL(input.files[0]);
+        preview.classList.remove('d-none');
+    } else {
+        preview.classList.add('d-none');
+    }
+}
+</script>
+@endpush
 @endsection

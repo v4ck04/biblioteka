@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Book extends Model
 {
-    protected $fillable = ['title', 'author', 'category_id', 'total_copies', 'available_copies'];
+    protected $fillable = ['title', 'author', 'category_id', 'total_copies', 'available_copies', 'image'];
+
+    public function imageUrl(): ?string
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 
     public function category(): BelongsTo
     {

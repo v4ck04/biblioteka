@@ -13,6 +13,10 @@
 <div class="row g-4">
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm">
+            @if($book->imageUrl())
+                <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}"
+                    class="card-img-top" style="max-height: 300px; object-fit: cover;">
+            @endif
             <div class="card-body">
                 <h5 class="card-title fw-semibold mb-3">Podaci o knjizi</h5>
                 <dl class="row mb-0">

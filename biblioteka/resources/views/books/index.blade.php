@@ -54,6 +54,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th style="width: 56px;"></th>
                         <th>Naslov</th>
                         <th>Autor</th>
                         <th>Kategorija</th>
@@ -65,6 +66,17 @@
                 <tbody>
                     @foreach($books as $book)
                     <tr>
+                        <td>
+                            @if($book->imageUrl())
+                                <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}"
+                                    class="rounded" style="width: 40px; height: 52px; object-fit: cover;">
+                            @else
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                    style="width: 40px; height: 52px;">
+                                    <i class="bi bi-book text-muted"></i>
+                                </div>
+                            @endif
+                        </td>
                         <td class="fw-semibold">{{ $book->title }}</td>
                         <td>{{ $book->author }}</td>
                         <td><span class="badge bg-secondary">{{ $book->category->name }}</span></td>

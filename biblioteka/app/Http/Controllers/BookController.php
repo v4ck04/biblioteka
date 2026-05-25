@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -44,7 +45,12 @@ class BookController extends Controller
             'category_id'      => ['required', 'exists:categories,id'],
             'total_copies'     => ['required', 'integer', 'min:0'],
             'available_copies' => ['required', 'integer', 'min:0', 'lte:total_copies'],
+            'image'            => ['nullable', 'image', 'mimes:jpeg,png,webp,gif', 'max:2048'],
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('books', 'public');
+        }
 
         Book::create($data);
 
@@ -76,10 +82,25 @@ class BookController extends Controller
             'category_id'      => ['required', 'exists:categories,id'],
             'total_copies'     => ['required', 'integer', 'min:' . $activeBorrowed],
             'available_copies' => ['required', 'integer', 'min:0', 'lte:total_copies'],
+            'image'            => ['nullable', 'image', 'mimes:jpeg,png,webp,gif', 'max:2048'],
+            'remove_image'     => ['nullable', 'boolean'],
         ], [
             'total_copies.min' => "Ukupan broj primeraka ne može biti manji od broja aktivnih pozajmica ({$activeBorrowed}).",
         ]);
 
+        if ($request->hasFile('image')) {
+            if ($book->image) {
+                Storage::disk('public')->delete($book->image);
+            }
+            $data['image'] = $request->file('image')->store('books', 'public');
+        } elseif ($request->boolean('remove_image') && $book->image) {
+            Storage::disk('public')->delete($book->image);
+            $data['image'] = null;
+        } else {
+            unset($data['image']);
+        }
+
+        unset($data['remove_image']);
         $book->update($data);
 
         return redirect()->route('admin.books.index')
@@ -90,6 +111,10 @@ class BookController extends Controller
     {
         if ($book->activeBorrowingsCount() > 0) {
             return back()->with('error', 'Nije moguće obrisati knjigu koja ima aktivne pozajmice.');
+        }
+
+        if ($book->image) {
+            Storage::disk('public')->delete($book->image);
         }
 
         $book->delete();

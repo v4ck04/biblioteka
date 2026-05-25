@@ -21,7 +21,7 @@
 
 <div class="card border-0 shadow-sm" style="max-width: 640px;">
     <div class="card-body p-4">
-        <form method="POST" action="{{ route('admin.books.update', $book) }}">
+        <form method="POST" action="{{ route('admin.books.update', $book) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -79,6 +79,37 @@
                 </div>
             </div>
 
+            <div class="mb-4">
+                <label for="image" class="form-label fw-semibold">Slika naslovnice</label>
+
+                @if($book->imageUrl())
+                    <div class="mb-2 d-flex align-items-start gap-3">
+                        <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}"
+                            class="rounded border" style="max-height: 140px; max-width: 100px; object-fit: cover;">
+                        <div>
+                            <div class="text-muted small mb-2">Trenutna slika</div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="remove_image"
+                                    name="remove_image" value="1">
+                                <label class="form-check-label text-danger small" for="remove_image">
+                                    Ukloni sliku
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <input type="file" id="image" name="image" accept="image/*"
+                    class="form-control @error('image') is-invalid @enderror"
+                    onchange="previewImage(this)">
+                @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <div class="form-text">
+                    {{ $book->imageUrl() ? 'Odaberi novi fajl samo ako želiš da zamijeniš sliku.' : 'JPEG, PNG, WebP ili GIF, max 2 MB. Nije obavezno.' }}
+                </div>
+                <img id="image-preview" src="#" alt="Preview" class="mt-3 rounded border d-none"
+                    style="max-height: 200px; max-width: 100%; object-fit: contain;">
+            </div>
+
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-floppy me-1"></i>Ažuriraj
@@ -88,4 +119,17 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('image-preview');
+    if (input.files && input.files[0]) {
+        preview.src = URL.createObjectURL(input.files[0]);
+        preview.classList.remove('d-none');
+    } else {
+        preview.classList.add('d-none');
+    }
+}
+</script>
+@endpush
 @endsection
