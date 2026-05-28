@@ -1,192 +1,160 @@
-@extends('layouts.frontend')
+@extends('layouts.public')
 
 @section('title', 'Katalog knjiga')
 
 @section('content')
 
-{{-- ══════════════ PAGE HEADER ══════════════ --}}
-<div style="background: linear-gradient(135deg, #0a2342, #1565c0);" class="py-4 mb-5">
-    <div class="container text-white py-2">
-        <nav aria-label="breadcrumb" class="mb-2">
-            <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color: rgba(255,255,255,.5);">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('home') }}" class="text-white-50 text-decoration-none">Početna</a>
-                </li>
-                <li class="breadcrumb-item active text-white">Knjige</li>
-            </ol>
-        </nav>
-        <h1 class="fw-bold mb-1">Katalog knjiga</h1>
-        <p class="mb-0 opacity-75">Pronađi svoju sledeću omiljenu knjigu</p>
+<div style="background: var(--gb-cream-2); border-bottom: 1px solid var(--gb-line); padding: 2rem 0 1.75rem;">
+    <div class="container">
+        <div class="gb-breadcrumb">
+            <a href="{{ route('home') }}">Početna</a>
+            <span class="gb-breadcrumb-sep"><i class="bi bi-chevron-right" style="font-size:.7rem;"></i></span>
+            <span>Katalog</span>
+        </div>
+        <h1 style="font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:700; color:var(--gb-ink); margin:0 0 .25rem;">
+            Katalog knjiga
+        </h1>
+        <p style="font-size:.88rem; color:var(--gb-ink-4); margin:0;">
+            Pronađite svoju sledeću omiljenu knjigu
+        </p>
     </div>
 </div>
 
-<div class="container pb-5">
-    <div class="row g-4">
+<div class="container" style="padding-top:2rem; padding-bottom:4rem;">
 
-        {{-- ══════ SIDEBAR FILTERS ══════ --}}
-        <div class="col-lg-3">
-            <div class="card filter-card shadow-sm sticky-top" style="top: 80px;">
-                <div class="card-header bg-transparent fw-semibold border-0 pb-0 pt-3">
-                    <i class="bi bi-funnel me-2 text-primary"></i>Filteri
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('books.index') }}" id="filterForm">
+    {{-- ══════ FILTER BAR ══════ --}}
+    <form method="GET" action="{{ route('katalog') }}" id="filterForm">
+        <div class="gb-filters">
+            <span class="gb-filter-label">Filteri</span>
+            <div class="gb-filter-divider"></div>
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted text-uppercase"
-                                   style="font-size: .7rem; letter-spacing: .07em;">Pretraga</label>
-                            <div class="input-group">
-                                <span class="input-group-text border-end-0 bg-transparent">
-                                    <i class="bi bi-search text-muted small"></i>
-                                </span>
-                                <input type="text" name="search" class="form-control border-start-0 ps-0"
-                                       placeholder="Naslov ili autor..."
-                                       value="{{ request('search') }}">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted text-uppercase"
-                                   style="font-size: .7rem; letter-spacing: .07em;">Kategorija</label>
-                            <select name="category_id" class="form-select form-select-sm">
-                                <option value="">Sve kategorije</option>
-                                @foreach($categories as $cat)
-                                    <option value="{{ $cat->id }}"
-                                        {{ request('category_id') == $cat->id ? 'selected' : '' }}>
-                                        {{ $cat->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label small fw-semibold text-muted text-uppercase"
-                                   style="font-size: .7rem; letter-spacing: .07em;">Dostupnost</label>
-                            <div class="d-flex flex-column gap-2">
-                                @foreach(['' => 'Sve knjige', 'available' => 'Dostupne', 'unavailable' => 'Pozajmljene'] as $val => $label)
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="availability"
-                                           id="avail_{{ $val ?: 'all' }}" value="{{ $val }}"
-                                           {{ request('availability', '') === $val ? 'checked' : '' }}
-                                           onchange="document.getElementById('filterForm').submit()">
-                                    <label class="form-check-label small" for="avail_{{ $val ?: 'all' }}">
-                                        {{ $label }}
-                                    </label>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-sm">
-                                <i class="bi bi-search me-1"></i>Primeni filtere
-                            </button>
-                            @if(request()->hasAny(['search', 'category_id', 'availability']))
-                            <a href="{{ route('books.index') }}" class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-x-lg me-1"></i>Poništi
-                            </a>
-                            @endif
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {{-- ══════ BOOKS GRID ══════ --}}
-        <div class="col-lg-9">
-
-            {{-- Result count & active filters --}}
-            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-                <div>
-                    <span class="fw-semibold">{{ $books->total() }}</span>
-                    <span class="text-muted"> {{ $books->total() == 1 ? 'knjiga pronađena' : 'knjiga pronađeno' }}</span>
-
-                    @if(request('search'))
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">
-                            <i class="bi bi-search me-1"></i>{{ request('search') }}
-                        </span>
-                    @endif
-                    @if(request('category_id'))
-                        @php $activeCat = $categories->firstWhere('id', request('category_id')); @endphp
-                        @if($activeCat)
-                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-2">
-                            <i class="bi bi-tag me-1"></i>{{ $activeCat->name }}
-                        </span>
-                        @endif
-                    @endif
-                    @if(request('availability') === 'available')
-                        <span class="badge bg-success-subtle text-success border border-success-subtle ms-2">
-                            <i class="bi bi-check-circle me-1"></i>Dostupne
-                        </span>
-                    @elseif(request('availability') === 'unavailable')
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-2">
-                            <i class="bi bi-x-circle me-1"></i>Pozajmljene
-                        </span>
-                    @endif
-                </div>
+            <div class="gb-filter-search" style="flex:1; min-width:200px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.867-3.834zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+                </svg>
+                <input type="text" name="search" placeholder="Naslov ili autor…"
+                       value="{{ request('search') }}" autocomplete="off">
             </div>
 
-            @if($books->isEmpty())
-                <div class="text-center py-5">
-                    <i class="bi bi-search display-1 text-muted d-block mb-3"></i>
-                    <h4 class="fw-semibold">Nema rezultata</h4>
-                    <p class="text-muted">Pokušaj sa drugačijim filterima ili <a href="{{ route('books.index') }}">prikaži sve knjige</a>.</p>
-                </div>
-            @else
-                <div class="row g-4">
-                    @foreach($books as $book)
-                    <div class="col-sm-6 col-xl-4">
-                        <a href="{{ route('books.show', $book) }}" class="text-decoration-none">
-                            <div class="card book-card shadow-sm rounded-3 overflow-hidden h-100">
-                                @if($book->imageUrl())
-                                    <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}" class="book-cover">
-                                @else
-                                    <div class="book-cover-placeholder">
-                                        <i class="bi bi-book"></i>
-                                    </div>
-                                @endif
-                                <div class="card-body p-3 d-flex flex-column">
-                                    <h6 class="card-title fw-semibold mb-1" style="line-height: 1.3;">
-                                        {{ $book->title }}
-                                    </h6>
-                                    <p class="text-muted small mb-3">
-                                        <i class="bi bi-person me-1"></i>{{ $book->author }}
-                                    </p>
-                                    <div class="mt-auto d-flex align-items-center justify-content-between flex-wrap gap-1">
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"
-                                              style="font-size: .7rem;">
-                                            <i class="bi bi-tag me-1"></i>{{ $book->category->name }}
-                                        </span>
-                                        @if($book->available_copies > 0)
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle"
-                                                  style="font-size: .7rem;">
-                                                <i class="bi bi-check-circle me-1"></i>Dostupna
-                                            </span>
-                                        @else
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle"
-                                                  style="font-size: .7rem;">
-                                                <i class="bi bi-x-circle me-1"></i>Pozajmljena
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    @endforeach
-                </div>
+            <div class="gb-filter-divider"></div>
 
-                {{-- Pagination --}}
-                @if($books->hasPages())
-                <div class="d-flex justify-content-center mt-5">
-                    <nav>
-                        {{ $books->links('pagination::bootstrap-5') }}
-                    </nav>
-                </div>
-                @endif
+            <select name="category_id" class="gb-filter-select"
+                    onchange="document.getElementById('filterForm').submit()">
+                <option value="">Sve kategorije</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat->id }}"
+                        {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                        {{ $cat->name }}
+                    </option>
+                @endforeach
+            </select>
+
+            <div class="gb-filter-divider"></div>
+
+            <label class="gb-filter-check">
+                <input type="checkbox" name="dostupne" value="1"
+                    {{ request('dostupne') ? 'checked' : '' }}
+                    onchange="document.getElementById('filterForm').submit()">
+                Samo dostupne
+            </label>
+
+            <div class="gb-filter-divider"></div>
+
+            <button type="submit" class="gb-filter-btn">
+                <i class="bi bi-search me-1"></i>Traži
+            </button>
+
+            @if(request()->hasAny(['search','category_id','dostupne']))
+            <a href="{{ route('katalog') }}" class="gb-filter-clear">
+                <i class="bi bi-x me-1"></i>Poništi
+            </a>
             @endif
         </div>
+    </form>
+
+    {{-- ══════ RESULTS META ══════ --}}
+    <div class="gb-results-meta">
+        <div class="gb-results-count">
+            <strong>{{ $books->total() }}</strong>
+            {{ $books->total() == 1 ? 'knjiga pronađena' : 'knjiga pronađeno' }}
+            @if(request('search'))
+                za „{{ request('search') }}"
+            @endif
+        </div>
+
+        <form method="GET" action="{{ route('katalog') }}" style="display:inline;">
+            @if(request('search'))    <input type="hidden" name="search"      value="{{ request('search') }}"> @endif
+            @if(request('category_id')) <input type="hidden" name="category_id" value="{{ request('category_id') }}"> @endif
+            @if(request('dostupne'))  <input type="hidden" name="dostupne"    value="1"> @endif
+            <select name="sort" class="gb-sort-select" onchange="this.form.submit()">
+                <option value="naslov"    {{ $sort === 'naslov'    ? 'selected' : '' }}>Abecedno (naslov)</option>
+                <option value="autor"     {{ $sort === 'autor'     ? 'selected' : '' }}>Abecedno (autor)</option>
+                <option value="najnovije" {{ $sort === 'najnovije' ? 'selected' : '' }}>Najnovije</option>
+            </select>
+        </form>
     </div>
+
+    {{-- ══════ BOOKS GRID ══════ --}}
+    @php
+        $coverColors = [
+            ['#2b4a25','#5c8a50'],['#6b4f3a','#a07455'],['#3d5a7a','#6b8db0'],
+            ['#4a2b4a','#7a5078'],['#6b3a1f','#a05c38'],['#1a3a4a','#3d6b7a'],
+            ['#3a4a1a','#6b7a3d'],['#4a3a1a','#7a6038'],
+        ];
+    @endphp
+
+    @if($books->isEmpty())
+        <div class="gb-empty">
+            <div class="gb-empty-icon"><i class="bi bi-search"></i></div>
+            <h4>Nema rezultata</h4>
+            <p>
+                Pokušaj sa drugačijim filterima ili
+                <a href="{{ route('katalog') }}" style="color:var(--gb-forest-mid);">prikaži sve knjige</a>.
+            </p>
+        </div>
+    @else
+        <div class="gb-grid">
+            @foreach($books as $book)
+            @php $ci = $book->id % 8; $cc = $coverColors[$ci]; @endphp
+            <a href="{{ route('knjiga.show', $book) }}" class="gb-card">
+                <div class="gb-cover">
+                    @if($book->imageUrl())
+                        <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}">
+                    @else
+                        @php
+                            $words = explode(' ', $book->title);
+                            $init  = strtoupper($words[0][0] ?? '?');
+                            if (isset($words[1])) $init .= strtoupper($words[1][0]);
+                        @endphp
+                        <div class="gb-cover-placeholder"
+                             style="background: linear-gradient(150deg, {{ $cc[0] }}, {{ $cc[1] }});">
+                            <span class="gb-cover-initials">{{ $init }}</span>
+                        </div>
+                    @endif
+                </div>
+                <div class="gb-card-body">
+                    <div class="gb-card-title">{{ $book->title }}</div>
+                    <div class="gb-card-author">{{ $book->author }}</div>
+                    <div class="gb-card-foot">
+                        <span class="gb-badge-cat">{{ $book->category->name }}</span>
+                        @if($book->available_copies > 0)
+                            <span class="gb-badge-avail ok">Dostupna</span>
+                        @else
+                            <span class="gb-badge-avail out">Pozajmljena</span>
+                        @endif
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+
+        @if($books->hasPages())
+            <div class="gb-pagination">
+                {{ $books->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
+    @endif
+
 </div>
 
 @endsection

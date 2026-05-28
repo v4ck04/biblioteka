@@ -1,163 +1,238 @@
-@extends('layouts.frontend')
+@extends('layouts.public')
 
 @section('title', 'Početna')
 
 @section('content')
 
 {{-- ══════════════ HERO ══════════════ --}}
-<section class="hero-section d-flex align-items-center py-5">
-    <div class="container py-4 position-relative">
+<section class="gb-hero">
+    <div class="container">
         <div class="row align-items-center g-5">
-            <div class="col-lg-7 text-white">
-                <span class="badge mb-3 px-3 py-2 fw-normal"
-                      style="background: rgba(232,168,56,.2); border: 1px solid rgba(232,168,56,.4); color: #e8a838; font-size: .8rem;">
-                    <i class="bi bi-stars me-1"></i>Dobrodošli u gradsku biblioteku
-                </span>
-                <h1 class="display-4 fw-bold lh-1 mb-4">
-                    Otkrijte svet<br>
-                    <span style="color: var(--accent);">između stranica</span>
+
+            <div class="col-lg-6">
+                <div class="gb-hero-eyebrow">
+                    <i class="bi bi-stars"></i>
+                    Dobrodošli u Gradsku biblioteku
+                </div>
+
+                <h1>
+                    Knjiga koju tražite<br>
+                    <em>verovatno je već</em><br>
+                    na polici.
                 </h1>
-                <p class="lead mb-5 opacity-75">
-                    Bogat katalog knjiga iz svih žanrova. Pronađite svoju sledeću omiljenu knjigu i obogatite znanje,
-                    maštu i iskustvo.
+
+                <p class="gb-hero-lead">
+                    Bogat katalog knjiga iz svih žanrova. Pronađite svoju sledeću omiljenu
+                    knjigu i pozajmite je uz jednostavan zahtev.
                 </p>
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="{{ route('books.index') }}" class="btn btn-warning btn-lg px-4 fw-semibold">
-                        <i class="bi bi-journal-text me-2"></i>Pregled knjiga
+
+                <form action="{{ route('katalog') }}" method="GET" class="gb-hero-search">
+                    <input type="text" name="search"
+                           placeholder="Pretraži knjige po naslovu ili autoru"
+                           value="{{ request('search') }}" autocomplete="off">
+                    <button type="submit">
+                        <i class="bi bi-search me-1"></i>Pretraži
+                    </button>
+                </form>
+
+                <div class="gb-hero-chips">
+                    @foreach($categories->sortByDesc('books_count')->take(6) as $cat)
+                    <a href="{{ route('katalog') }}?category_id={{ $cat->id }}" class="gb-chip">
+                        {{ $cat->name }}
                     </a>
-                    <a href="{{ route('books.index') }}?availability=available" class="btn btn-outline-light btn-lg px-4">
-                        <i class="bi bi-check-circle me-2"></i>Dostupne sada
+                    @endforeach
+                    <a href="{{ route('katalog') }}" class="gb-chip gb-chip-all">
+                        Sve kategorije →
                     </a>
+                </div>
+
+                <div class="gb-stats">
+                    <div>
+                        <div class="gb-stat-num">{{ $stats['books'] }}</div>
+                        <div class="gb-stat-label">Naslova u katalogu</div>
+                    </div>
+                    <div class="gb-stats-sep"></div>
+                    <div>
+                        <div class="gb-stat-num">{{ $stats['categories'] }}</div>
+                        <div class="gb-stat-label">Kategorija</div>
+                    </div>
+                    <div class="gb-stats-sep"></div>
+                    <div>
+                        <div class="gb-stat-num gb-stat-text">Pon–Sub</div>
+                        <div class="gb-stat-label">Otvoreno za posete</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-lg-5">
-                <div class="row g-3">
-                    <div class="col-4">
-                        <div class="hero-stat-card text-center text-white p-3">
-                            <div class="fs-2 fw-bold" style="color: var(--accent);">{{ $stats['books'] }}</div>
-                            <div class="small opacity-75">Knjiga</div>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="hero-stat-card text-center text-white p-3">
-                            <div class="fs-2 fw-bold" style="color: var(--accent);">{{ $stats['categories'] }}</div>
-                            <div class="small opacity-75">Kategorija</div>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="hero-stat-card text-center text-white p-3">
-                            <div class="fs-2 fw-bold" style="color: var(--accent);">{{ $stats['available'] }}</div>
-                            <div class="small opacity-75">Dostupno</div>
-                        </div>
-                    </div>
-                </div>
+            {{-- ──────── Visual: fanned book illustration ──────── --}}
+            <div class="col-lg-6 d-none d-lg-flex gb-hero-visual">
+                @php
+                    $fanBooks = [
+                        ['dark' => '#1a3020', 'mid' => '#2b4a25', 'light' => '#3d6b35'],
+                        ['dark' => '#5a3a28', 'mid' => '#6b4f3a', 'light' => '#9c7054'],
+                        ['dark' => '#2e4560', 'mid' => '#3d5a7a', 'light' => '#5b7fa8'],
+                        ['dark' => '#8c5520', 'mid' => '#b87333', 'light' => '#d4884a'],
+                        ['dark' => '#38203a', 'mid' => '#4a2b4a', 'light' => '#7a5478'],
+                        ['dark' => '#12293a', 'mid' => '#1a3a4a', 'light' => '#3d6b7a'],
+                        ['dark' => '#2c3812', 'mid' => '#3a4a1a', 'light' => '#5e7030'],
+                    ];
+                    $rotations = [-28, -18, -9, 0, 9, 18, 27];
+                @endphp
 
-                {{-- Decorative floating books icon --}}
-                <div class="text-center mt-4 d-none d-lg-block" style="opacity: .15;">
-                    <i class="bi bi-book-half" style="font-size: 8rem; color: white;"></i>
+                <div class="gb-book-fan-wrap">
+                    @foreach($fanBooks as $i => $fb)
+                    <div class="gb-fan-book" style="
+                        background: linear-gradient(175deg, {{ $fb['mid'] }} 0%, {{ $fb['light'] }} 100%);
+                        transform: rotate({{ $rotations[$i] }}deg);
+                        z-index: {{ count($fanBooks) - abs($rotations[$i] / 9) }};
+                        box-shadow: {{ $rotations[$i] > 0 ? '3px' : '-3px' }} 4px 14px rgba(20,14,8,0.35), inset {{ $rotations[$i] > 0 ? '4px' : '-4px' }} 0 0 rgba(0,0,0,0.28);
+                    ">
+                        <div class="gb-fan-spine" style="
+                            {{ $rotations[$i] >= 0 ? 'left:0;' : 'right:0;left:auto;' }}
+                        "></div>
+                        <div class="gb-fan-page-edge"></div>
+                    </div>
+                    @endforeach
+
+                    {{-- Floating stat card --}}
+                    <div class="gb-hero-float-card">
+                        <div class="gb-hero-float-pulse">
+                            <div class="gb-hero-float-dot"></div>
+                        </div>
+                        <div>
+                            <div class="gb-hero-float-num">{{ $stats['available'] }}</div>
+                            <div class="gb-hero-float-label">naslova dostupno</div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
 
 {{-- ══════════════ CATEGORIES ══════════════ --}}
-<section class="py-5 bg-body-secondary">
+<section class="gb-section gb-section-alt">
     <div class="container">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <h2 class="fw-bold section-heading mb-0">Kategorije</h2>
-        </div>
-        <div class="row g-3">
-            @foreach($categories as $cat)
-            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                <a href="{{ route('books.index') }}?category_id={{ $cat->id }}"
-                   class="card text-decoration-none border-0 shadow-sm h-100 text-center p-3
-                          {{ request('category_id') == $cat->id ? 'border border-primary' : '' }}"
-                   style="transition: transform .15s, box-shadow .15s;"
-                   onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 .5rem 1rem rgba(0,0,0,.12)'"
-                   onmouseout="this.style.transform=''; this.style.boxShadow=''">
-                    <i class="bi bi-tag fs-3 mb-2" style="color: var(--primary-mid);"></i>
-                    <div class="small fw-semibold">{{ $cat->name }}</div>
-                    <div class="text-muted" style="font-size: .72rem;">{{ $cat->books_count }} {{ $cat->books_count == 1 ? 'knjiga' : 'knjiga' }}</div>
-                </a>
+        <div class="d-flex align-items-end justify-content-between gb-section-head mb-0">
+            <div>
+                <div class="gb-section-eyebrow">Pretraži po žanru</div>
+                <h2 class="gb-section-title">Kategorije</h2>
             </div>
-            @endforeach
+            <a href="{{ route('katalog') }}" class="gb-section-more mb-1">
+                Sve knjige <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="gb-cat-grid mt-4">
+            @forelse($categories as $cat)
+            <a href="{{ route('katalog') }}?category_id={{ $cat->id }}" class="gb-cat-card">
+                <div class="gb-cat-icon">
+                    <i class="bi bi-bookmark"></i>
+                </div>
+                <div class="gb-cat-name">{{ $cat->name }}</div>
+                <div class="gb-cat-count">{{ $cat->books_count }} {{ $cat->books_count == 1 ? 'knjiga' : ($cat->books_count >= 2 && $cat->books_count <= 4 ? 'knjige' : 'knjiga') }}</div>
+            </a>
+            @empty
+            <p class="text-muted" style="font-size:.88rem;">Još nema kategorija.</p>
+            @endforelse
         </div>
     </div>
 </section>
 
 {{-- ══════════════ FEATURED BOOKS ══════════════ --}}
-<section class="py-5">
+<section class="gb-section">
     <div class="container">
-        <div class="d-flex align-items-center justify-content-between mb-5">
-            <h2 class="fw-bold section-heading mb-0">Najnovije knjige</h2>
-            <a href="{{ route('books.index') }}" class="btn btn-outline-primary btn-sm">
-                Sve knjige <i class="bi bi-arrow-right ms-1"></i>
+        <div class="d-flex align-items-end justify-content-between gb-section-head mb-0">
+            <div>
+                <div class="gb-section-eyebrow">Najnovije u fondu</div>
+                <h2 class="gb-section-title">Istaknute knjige</h2>
+            </div>
+            <a href="{{ route('katalog') }}" class="gb-section-more mb-1">
+                Ceo katalog <i class="bi bi-arrow-right"></i>
             </a>
         </div>
 
-        <div class="row g-4">
+        @php
+            $coverColors = [
+                ['#2b4a25','#5c8a50'],['#6b4f3a','#a07455'],['#3d5a7a','#6b8db0'],
+                ['#4a2b4a','#7a5078'],['#6b3a1f','#a05c38'],['#1a3a4a','#3d6b7a'],
+                ['#3a4a1a','#6b7a3d'],['#4a3a1a','#7a6038'],
+            ];
+        @endphp
+
+        @if($featuredBooks->isEmpty())
+        <div class="gb-empty" style="padding:3rem 0;">
+            <div class="gb-empty-icon"><i class="bi bi-journals"></i></div>
+            <h4>Katalog je prazan</h4>
+            <p>Knjige još uvek nisu dodate u fond biblioteke.</p>
+        </div>
+        @else
+        <div class="gb-grid mt-4">
             @foreach($featuredBooks as $book)
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <a href="{{ route('books.show', $book) }}" class="text-decoration-none">
-                    <div class="card book-card shadow-sm rounded-3 overflow-hidden">
-                        @if($book->imageUrl())
-                            <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}" class="book-cover">
-                        @else
-                            <div class="book-cover-placeholder rounded-top">
-                                <i class="bi bi-book"></i>
-                            </div>
-                        @endif
-                        <div class="card-body p-3">
-                            <h6 class="card-title fw-semibold mb-1 text-truncate" title="{{ $book->title }}">
-                                {{ $book->title }}
-                            </h6>
-                            <p class="text-muted small mb-2">{{ $book->author }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"
-                                      style="font-size: .7rem;">
-                                    {{ $book->category->name }}
-                                </span>
-                                @if($book->available_copies > 0)
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle"
-                                          style="font-size: .7rem;">
-                                        <i class="bi bi-check-circle me-1"></i>Dostupna
-                                    </span>
-                                @else
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle"
-                                          style="font-size: .7rem;">
-                                        <i class="bi bi-x-circle me-1"></i>Pozajmljena
-                                    </span>
-                                @endif
-                            </div>
+            @php $ci = $book->id % 8; $cc = $coverColors[$ci]; @endphp
+            <a href="{{ route('knjiga.show', $book) }}" class="gb-card">
+                <div class="gb-cover">
+                    @if($book->imageUrl())
+                        <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}">
+                    @else
+                        @php
+                            $words = explode(' ', $book->title);
+                            $init  = strtoupper($words[0][0] ?? '?');
+                            if (isset($words[1])) $init .= strtoupper($words[1][0]);
+                        @endphp
+                        <div class="gb-cover-placeholder"
+                             style="background: linear-gradient(150deg, {{ $cc[0] }}, {{ $cc[1] }});">
+                            <span class="gb-cover-initials">{{ $init }}</span>
                         </div>
+                    @endif
+                </div>
+                <div class="gb-card-body">
+                    <div class="gb-card-title">{{ $book->title }}</div>
+                    <div class="gb-card-author">{{ $book->author }}</div>
+                    <div class="gb-card-foot">
+                        <span class="gb-badge-cat">{{ $book->category->name }}</span>
+                        @if($book->available_copies > 0)
+                            <span class="gb-badge-avail ok">Dostupna</span>
+                        @else
+                            <span class="gb-badge-avail out">Pozajmljena</span>
+                        @endif
                     </div>
-                </a>
-            </div>
+                </div>
+            </a>
             @endforeach
         </div>
+        @endif
+    </div>
+</section>
 
-        <div class="text-center mt-5">
-            <a href="{{ route('books.index') }}" class="btn btn-primary btn-lg px-5">
-                <i class="bi bi-journals me-2"></i>Pogledaj ceo katalog
-            </a>
+{{-- ══════════════ HOW IT WORKS ══════════════ --}}
+<div class="gb-how">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-12 col-md-4">
+                <div class="gb-how-step">
+                    <div class="gb-step-num">01</div>
+                    <div class="gb-step-title">Pronađi knjigu</div>
+                    <div class="gb-step-desc">Pretražuj katalog po naslovu, autoru ili kategoriji. Filtruj po dostupnosti.</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="gb-how-step">
+                    <div class="gb-step-num">02</div>
+                    <div class="gb-step-title">Pošalji zahtev</div>
+                    <div class="gb-step-desc">Popuni kratku formu sa kontakt podacima. Bibliotekar će pregledati zahtev u roku od 24 sata.</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="gb-how-step">
+                    <div class="gb-step-num">03</div>
+                    <div class="gb-step-title">Preuzmi knjigu</div>
+                    <div class="gb-step-desc">Poseti biblioteku sa ličnom kartom i preuzmi svoju knjigu na 14 dana.</div>
+                </div>
+            </div>
         </div>
     </div>
-</section>
-
-{{-- ══════════════ CTA BANNER ══════════════ --}}
-<section class="py-5" style="background: linear-gradient(135deg, #0a2342, #1565c0);">
-    <div class="container text-center text-white py-3">
-        <i class="bi bi-book-half display-4 mb-3 d-block" style="color: var(--accent);"></i>
-        <h2 class="fw-bold mb-3">Pronađi svoju sledeću avanturu</h2>
-        <p class="lead mb-4 opacity-75 mx-auto" style="max-width: 540px;">
-            Naš fond se redovno obogaćuje novim naslovima. Poseti nas i pronađi knjigu koja će te odvesti u novi svet.
-        </p>
-        <a href="{{ route('books.index') }}?availability=available" class="btn btn-warning btn-lg px-5 fw-semibold">
-            <i class="bi bi-search me-2"></i>Pretraži dostupne knjige
-        </a>
-    </div>
-</section>
+</div>
 
 @endsection

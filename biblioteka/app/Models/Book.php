@@ -34,4 +34,9 @@ class Book extends Model
     {
         return $this->borrowings()->whereNull('returned_at')->count();
     }
+
+    public function bookRequests(): HasMany
+    {
+        return $this->hasMany(BookRequest::class);
+    }
 }

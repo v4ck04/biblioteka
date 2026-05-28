@@ -11,6 +11,9 @@ class FrontendController extends Controller
     public function home()
     {
         $featuredBooks = Book::with('category')->latest()->take(8)->get();
+        $heroBooks     = Book::with('category')->latest()->take(3)->get();
+        $popularBooks  = Book::withCount('borrowings')->with('category')
+                             ->orderByDesc('borrowings_count')->take(6)->get();
         $categories    = Category::withCount('books')->orderBy('name')->get();
         $stats = [
             'books'      => Book::count(),
@@ -18,10 +21,12 @@ class FrontendController extends Controller
             'available'  => Book::where('available_copies', '>', 0)->count(),
         ];
 
-        return view('frontend.home', compact('featuredBooks', 'categories', 'stats'));
+        return view('frontend.home', compact(
+            'featuredBooks', 'heroBooks', 'popularBooks', 'categories', 'stats'
+        ));
     }
 
-    public function books(Request $request)
+    public function catalog(Request $request)
     {
         $query = Book::with('category');
 
@@ -37,18 +42,21 @@ class FrontendController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        if ($request->filled('availability')) {
-            if ($request->availability === 'available') {
-                $query->where('available_copies', '>', 0);
-            } elseif ($request->availability === 'unavailable') {
-                $query->where('available_copies', 0);
-            }
+        if ($request->boolean('dostupne')) {
+            $query->where('available_copies', '>', 0);
         }
 
-        $books      = $query->orderBy('title')->paginate(12)->withQueryString();
+        $sort = $request->get('sort', 'naslov');
+        match ($sort) {
+            'autor'    => $query->orderBy('author'),
+            'najnovije' => $query->orderByDesc('id'),
+            default    => $query->orderBy('title'),
+        };
+
+        $books      = $query->paginate(12)->withQueryString();
         $categories = Category::orderBy('name')->get();
 
-        return view('frontend.books', compact('books', 'categories'));
+        return view('frontend.books', compact('books', 'categories', 'sort'));
     }
 
     public function show(Book $book)
@@ -61,5 +69,16 @@ class FrontendController extends Controller
             ->get();
 
         return view('frontend.show', compact('book', 'relatedBooks'));
+    }
+
+    public function confirmation()
+    {
+        $data = session('request_confirmation');
+
+        if (! $data) {
+            return redirect()->route('home');
+        }
+
+        return view('frontend.confirmation', compact('data'));
     }
 }

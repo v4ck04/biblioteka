@@ -1,168 +1,326 @@
-@extends('layouts.frontend')
+@extends('layouts.public')
 
 @section('title', $book->title)
 
 @section('content')
 
-{{-- ══════════════ PAGE HEADER ══════════════ --}}
-<div style="background: linear-gradient(135deg, #0a2342, #1565c0);" class="py-4 mb-5">
-    <div class="container text-white py-2">
-        <nav aria-label="breadcrumb" class="mb-2">
-            <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color: rgba(255,255,255,.5);">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('home') }}" class="text-white-50 text-decoration-none">Početna</a>
-                </li>
-                <li class="breadcrumb-item">
-                    <a href="{{ route('books.index') }}" class="text-white-50 text-decoration-none">Knjige</a>
-                </li>
-                <li class="breadcrumb-item active text-white text-truncate" style="max-width: 300px;">
-                    {{ $book->title }}
-                </li>
-            </ol>
-        </nav>
-    </div>
-</div>
+@php
+    $coverColors = [
+        ['#2b4a25','#5c8a50'],['#6b4f3a','#a07455'],['#3d5a7a','#6b8db0'],
+        ['#4a2b4a','#7a5078'],['#6b3a1f','#a05c38'],['#1a3a4a','#3d6b7a'],
+        ['#3a4a1a','#6b7a3d'],['#4a3a1a','#7a6038'],
+    ];
+    $ci = $book->id % 8;
+    $cc = $coverColors[$ci];
+    $words = explode(' ', $book->title);
+    $init  = strtoupper($words[0][0] ?? '?');
+    if (isset($words[1])) $init .= strtoupper($words[1][0]);
+@endphp
 
-<div class="container pb-5">
-    <div class="row g-5 justify-content-center">
+<div class="gb-detail-wrap">
+    <div class="container">
 
-        {{-- ══════ COVER ══════ --}}
-        <div class="col-md-4 col-lg-3">
-            <div class="text-center text-md-start">
-                @if($book->imageUrl())
-                    <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}"
-                         class="img-fluid rounded-3 shadow-lg"
-                         style="max-height: 420px; width: 100%; object-fit: cover;">
-                @else
-                    <div class="rounded-3 shadow d-flex align-items-center justify-content-center"
-                         style="height: 380px; background: linear-gradient(135deg, #e8eaf6, #cfd8dc);">
-                        <i class="bi bi-book display-1" style="color: #90a4ae;"></i>
-                    </div>
-                @endif
-            </div>
+        {{-- Breadcrumb --}}
+        <div class="gb-breadcrumb">
+            <a href="{{ route('home') }}">Početna</a>
+            <span class="gb-breadcrumb-sep"><i class="bi bi-chevron-right" style="font-size:.7rem;"></i></span>
+            <a href="{{ route('katalog') }}">Katalog</a>
+            <span class="gb-breadcrumb-sep"><i class="bi bi-chevron-right" style="font-size:.7rem;"></i></span>
+            <span>{{ Str::limit($book->title, 40) }}</span>
         </div>
 
-        {{-- ══════ DETAILS ══════ --}}
-        <div class="col-md-8 col-lg-6">
+        <div class="row g-5">
 
-            {{-- Category + availability badges --}}
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                <a href="{{ route('books.index') }}?category_id={{ $book->category_id }}"
-                   class="badge bg-primary-subtle text-primary border border-primary-subtle text-decoration-none px-3 py-2"
-                   style="font-size: .8rem;">
-                    <i class="bi bi-tag me-1"></i>{{ $book->category->name }}
-                </a>
-                @if($book->available_copies > 0)
-                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2"
-                          style="font-size: .8rem;">
-                        <i class="bi bi-check-circle me-1"></i>Dostupna za pozajmicu
-                    </span>
-                @else
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2"
-                          style="font-size: .8rem;">
-                        <i class="bi bi-x-circle me-1"></i>Trenutno nedostupna
-                    </span>
-                @endif
-            </div>
-
-            <h1 class="fw-bold mb-2">{{ $book->title }}</h1>
-            <p class="fs-5 text-muted mb-4">
-                <i class="bi bi-person-circle me-2"></i>{{ $book->author }}
-            </p>
-
-            {{-- Info cards --}}
-            <div class="row g-3 mb-4">
-                <div class="col-6">
-                    <div class="card border-0 bg-body-secondary rounded-3 p-3 text-center">
-                        <div class="fw-bold fs-4 mb-1">{{ $book->total_copies }}</div>
-                        <div class="text-muted small">Ukupno primeraka</div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="card border-0 rounded-3 p-3 text-center
-                        {{ $book->available_copies > 0 ? 'bg-success-subtle' : 'bg-danger-subtle' }}">
-                        <div class="fw-bold fs-4 mb-1
-                            {{ $book->available_copies > 0 ? 'text-success' : 'text-danger' }}">
-                            {{ $book->available_copies }}
-                        </div>
-                        <div class="text-muted small">Dostupno</div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Availability note --}}
-            @if($book->available_copies > 0)
-            <div class="alert alert-success d-flex align-items-start gap-2 border-0 rounded-3" role="alert">
-                <i class="bi bi-info-circle-fill mt-1 flex-shrink-0"></i>
-                <div class="small">
-                    Ova knjiga je dostupna za pozajmicu. Posetite nas u biblioteci sa ličnom kartom i slobodnom
-                    knjiga je vaša na <strong>14 dana</strong>.
-                </div>
-            </div>
-            @else
-            <div class="alert alert-warning d-flex align-items-start gap-2 border-0 rounded-3" role="alert">
-                <i class="bi bi-clock-history mt-1 flex-shrink-0"></i>
-                <div class="small">
-                    Svi primerci su trenutno pozajmljeni. Proverite ponovo uskoro ili nas kontaktirajte da te
-                    obaveštimo kada knjiga postane dostupna.
-                </div>
-            </div>
-            @endif
-
-            {{-- Action buttons --}}
-            <div class="d-flex flex-wrap gap-3 mt-4">
-                <a href="{{ route('books.index') }}?category_id={{ $book->category_id }}"
-                   class="btn btn-outline-primary">
-                    <i class="bi bi-collection me-2"></i>Više iz kategorije
-                </a>
-                <a href="{{ route('books.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-2"></i>Svi katalog
-                </a>
-            </div>
-        </div>
-    </div>
-
-    {{-- ══════ RELATED BOOKS ══════ --}}
-    @if($relatedBooks->isNotEmpty())
-    <hr class="my-5">
-    <div>
-        <h3 class="fw-bold section-heading mb-5">Više iz kategorije "{{ $book->category->name }}"</h3>
-        <div class="row g-4">
-            @foreach($relatedBooks as $rel)
-            <div class="col-6 col-md-3">
-                <a href="{{ route('books.show', $rel) }}" class="text-decoration-none">
-                    <div class="card book-card shadow-sm rounded-3 overflow-hidden h-100">
-                        @if($rel->imageUrl())
-                            <img src="{{ $rel->imageUrl() }}" alt="{{ $rel->title }}" class="book-cover">
+            {{-- ══════ COVER ══════ --}}
+            <div class="col-md-4 col-lg-3">
+                <div class="gb-detail-cover-wrap">
+                    <div class="gb-detail-cover">
+                        @if($book->imageUrl())
+                            <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}">
                         @else
-                            <div class="book-cover-placeholder">
-                                <i class="bi bi-book"></i>
+                            <div class="gb-detail-cover-ph"
+                                 style="background: linear-gradient(150deg, {{ $cc[0] }}, {{ $cc[1] }});">
+                                <span class="gb-cover-initials" style="font-size:3.5rem;">{{ $init }}</span>
                             </div>
                         @endif
-                        <div class="card-body p-3">
-                            <h6 class="card-title fw-semibold mb-1 text-truncate" title="{{ $rel->title }}">
-                                {{ $rel->title }}
-                            </h6>
-                            <p class="text-muted small mb-2">{{ $rel->author }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ══════ DETAILS ══════ --}}
+            <div class="col-md-8 col-lg-7">
+
+                <div class="gb-detail-eyebrow">
+                    <a href="{{ route('katalog') }}?category_id={{ $book->category_id }}"
+                       class="gb-chip">
+                        <i class="bi bi-bookmark me-1"></i>{{ $book->category->name }}
+                    </a>
+                    @if($book->available_copies > 0)
+                        <span class="gb-avail-badge ok">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Dostupna za pozajmicu
+                        </span>
+                    @else
+                        <span class="gb-avail-badge out">
+                            <i class="bi bi-x-circle-fill"></i>
+                            Trenutno nedostupna
+                        </span>
+                    @endif
+                </div>
+
+                <h1 class="gb-detail-title">{{ $book->title }}</h1>
+                <div class="gb-detail-author">
+                    <i class="bi bi-person-circle me-1"></i>{{ $book->author }}
+                </div>
+
+                <div class="gb-meta-grid">
+                    <div class="gb-meta-box">
+                        <div class="gb-meta-val">{{ $book->total_copies }}</div>
+                        <div class="gb-meta-lbl">Ukupno primeraka</div>
+                    </div>
+                    <div class="gb-meta-box">
+                        <div class="gb-meta-val {{ $book->available_copies > 0 ? 'ok' : 'out' }}">
+                            {{ $book->available_copies }}
+                        </div>
+                        <div class="gb-meta-lbl">Dostupno sada</div>
+                    </div>
+                </div>
+
+                @if($book->available_copies > 0)
+                <div class="gb-detail-note ok">
+                    <i class="bi bi-info-circle-fill mt-1" style="flex-shrink:0;"></i>
+                    <div>
+                        Ova knjiga je dostupna za pozajmicu. Pošalji zahtev klikom na dugme ispod,
+                        a zatim poseti biblioteku sa ličnom kartom. Knjiga se pozajmljuje na
+                        <strong>14 dana</strong>.
+                    </div>
+                </div>
+                @else
+                <div class="gb-detail-note out">
+                    <i class="bi bi-clock-history mt-1" style="flex-shrink:0;"></i>
+                    <div>
+                        Svi primerci su trenutno pozajmljeni. Proverite ponovo uskoro ili nas
+                        kontaktirajte da vas obaveštimo kada knjiga postane dostupna.
+                    </div>
+                </div>
+                @endif
+
+                {{-- Action buttons --}}
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                    @if($book->available_copies > 0)
+                        <button type="button" class="gb-btn gb-btn-forest"
+                                data-bs-toggle="modal" data-bs-target="#requestModal">
+                            <i class="bi bi-send"></i>
+                            Zatraži pozajmicu
+                        </button>
+                    @else
+                        <span class="gb-btn gb-btn-disabled">
+                            <i class="bi bi-x-circle"></i>
+                            Trenutno nedostupno
+                        </span>
+                        <p class="gb-unavail-note">
+                            Pridružite se redu čekanja kontaktiranjem biblioteke.
+                        </p>
+                    @endif
+                    <a href="{{ route('katalog') }}?category_id={{ $book->category_id }}" class="gb-btn gb-btn-outline">
+                        <i class="bi bi-collection"></i>
+                        Više iz kategorije
+                    </a>
+                    <a href="{{ route('katalog') }}" class="gb-btn gb-btn-outline">
+                        <i class="bi bi-arrow-left"></i>
+                        Katalog
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- ══════ RELATED BOOKS ══════ --}}
+        @if($relatedBooks->isNotEmpty())
+        <hr style="border-color:var(--gb-line); margin: 3.5rem 0 2.5rem;">
+        <div>
+            <div class="gb-section-eyebrow">Možda vas zanima</div>
+            <h3 class="gb-section-title" style="margin-bottom:1.5rem;">
+                Slične knjige iz kategorije „{{ $book->category->name }}"
+            </h3>
+
+            @php
+                $relColors = [
+                    ['#2b4a25','#5c8a50'],['#6b4f3a','#a07455'],
+                    ['#3d5a7a','#6b8db0'],['#4a2b4a','#7a5078'],
+                ];
+            @endphp
+            <div class="gb-grid" style="grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));">
+                @foreach($relatedBooks as $rel)
+                @php $rc = $relColors[$rel->id % 4]; @endphp
+                <a href="{{ route('knjiga.show', $rel) }}" class="gb-card">
+                    <div class="gb-cover">
+                        @if($rel->imageUrl())
+                            <img src="{{ $rel->imageUrl() }}" alt="{{ $rel->title }}">
+                        @else
+                            @php
+                                $rw = explode(' ', $rel->title);
+                                $ri = strtoupper($rw[0][0] ?? '?');
+                                if (isset($rw[1])) $ri .= strtoupper($rw[1][0]);
+                            @endphp
+                            <div class="gb-cover-placeholder"
+                                 style="background: linear-gradient(150deg, {{ $rc[0] }}, {{ $rc[1] }});">
+                                <span class="gb-cover-initials">{{ $ri }}</span>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="gb-card-body">
+                        <div class="gb-card-title">{{ $rel->title }}</div>
+                        <div class="gb-card-author">{{ $rel->author }}</div>
+                        <div class="gb-card-foot">
                             @if($rel->available_copies > 0)
-                                <span class="badge bg-success-subtle text-success border border-success-subtle"
-                                      style="font-size: .68rem;">
-                                    <i class="bi bi-check-circle me-1"></i>Dostupna
-                                </span>
+                                <span class="gb-badge-avail ok">Dostupna</span>
                             @else
-                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle"
-                                      style="font-size: .68rem;">
-                                    <i class="bi bi-x-circle me-1"></i>Pozajmljena
-                                </span>
+                                <span class="gb-badge-avail out">Pozajmljena</span>
                             @endif
                         </div>
                     </div>
                 </a>
+                @endforeach
             </div>
-            @endforeach
+        </div>
+        @endif
+
+    </div>
+</div>
+
+{{-- ══════════════ REQUEST MODAL ══════════════ --}}
+@if($book->available_copies > 0)
+<div class="modal fade" id="requestModal" tabindex="-1"
+     aria-labelledby="requestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered gb-modal-dialog">
+        <div class="modal-content gb-modal">
+
+            {{-- Header --}}
+            <div class="gb-modal-head">
+                <div>
+                    <h5 class="gb-modal-title" id="requestModalLabel">Zahtev za pozajmicu</h5>
+                    <p class="gb-modal-sub">Bibliotekar će vas kontaktirati u roku od 24 sata radi potvrde.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button>
+            </div>
+
+            <div class="modal-body gb-modal-body">
+
+                {{-- Book info strip --}}
+                <div class="gb-modal-book">
+                    <div class="gb-modal-cover">
+                        @if($book->imageUrl())
+                            <img src="{{ $book->imageUrl() }}" alt="{{ $book->title }}">
+                        @else
+                            <div style="width:100%;height:100%;
+                                        background:linear-gradient(160deg,{{ $cc[0] }},{{ $cc[1] }});
+                                        display:flex;align-items:center;justify-content:center;">
+                                <span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;
+                                             font-weight:700;color:rgba(255,255,255,.85);">{{ $init }}</span>
+                            </div>
+                        @endif
+                    </div>
+                    <div style="min-width:0;">
+                        <div class="gb-modal-book-title">{{ $book->title }}</div>
+                        <div class="gb-modal-book-author">{{ $book->author }}</div>
+                        <span class="gb-avail-badge ok" style="font-size:.68rem;padding:.18rem .65rem;">
+                            <i class="bi bi-check-circle-fill"></i>
+                            {{ $book->available_copies }}
+                            {{ $book->available_copies == 1 ? 'primerak dostupan' : 'primeraka dostupno' }}
+                        </span>
+                    </div>
+                </div>
+
+                {{-- Form --}}
+                <form method="POST" action="{{ route('requests.store', $book) }}" id="requestForm">
+                    @csrf
+
+                    <div class="gb-field">
+                        <label class="gb-label" for="modal_reader_name">Ime i prezime *</label>
+                        <input type="text" id="modal_reader_name" name="reader_name"
+                               class="gb-input {{ $errors->has('reader_name') ? 'is-invalid' : '' }}"
+                               value="{{ old('reader_name') }}"
+                               placeholder="Npr. Marija Petrović"
+                               autocomplete="name">
+                        @error('reader_name')
+                            <div class="gb-error">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="gb-field">
+                        <label class="gb-label" for="modal_contact">Email ili telefon *</label>
+                        <input type="text" id="modal_contact" name="contact"
+                               class="gb-input {{ $errors->has('contact') ? 'is-invalid' : '' }}"
+                               value="{{ old('contact') }}"
+                               placeholder="Npr. marija@email.rs ili +381 64 123 4567"
+                               autocomplete="email">
+                        @error('contact')
+                            <div class="gb-error">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="gb-field">
+                        <label class="gb-label" for="modal_notes">
+                            Poruka
+                            <span style="font-weight:400;text-transform:none;color:var(--gb-ink-4);">(opciono)</span>
+                        </label>
+                        <textarea id="modal_notes" name="notes"
+                                  class="gb-input gb-textarea {{ $errors->has('notes') ? 'is-invalid' : '' }}"
+                                  placeholder="Dodaj napomenu za bibliotekara (maks. 280 znakova)…"
+                                  maxlength="280">{{ old('notes') }}</textarea>
+                        @error('notes')
+                            <div class="gb-error">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
+                    {{-- Consent --}}
+                    <div class="gb-consent">
+                        <input type="checkbox" id="modal_consent" name="consent" value="1"
+                               {{ old('consent') ? 'checked' : '' }}>
+                        <label for="modal_consent">
+                            Saglasan/na sam sa obradom ličnih podataka u svrhu obrade zahteva za
+                            pozajmicu knjige. Podaci se neće koristiti u druge svrhe.
+                        </label>
+                    </div>
+                    @error('consent')
+                        <div class="gb-error" style="margin-top:-.4rem;margin-bottom:.75rem;">
+                            <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
+                        </div>
+                    @enderror
+
+                    {{-- Buttons --}}
+                    <div class="gb-modal-foot">
+                        <button type="button" class="gb-btn gb-btn-outline" data-bs-dismiss="modal">
+                            <i class="bi bi-x"></i>Otkaži
+                        </button>
+                        <button type="submit" class="gb-btn gb-btn-forest">
+                            <i class="bi bi-send"></i>Pošalji zahtev
+                        </button>
+                    </div>
+                </form>
+
+            </div>
         </div>
     </div>
-    @endif
 </div>
+
+@push('scripts')
+@if($errors->any())
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modal = new bootstrap.Modal(document.getElementById('requestModal'));
+        modal.show();
+    });
+</script>
+@endif
+@endpush
+@endif
 
 @endsection
