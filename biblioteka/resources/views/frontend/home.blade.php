@@ -4,6 +4,19 @@
 
 @section('content')
 
+@php
+$catIcons = [
+    'Naučna fantastika' => 'bi-rocket-takeoff',
+    'Detektivski roman' => 'bi-search',
+    'Istorija'          => 'bi-hourglass-split',
+    'Roman'             => 'bi-book',
+    'Filozofija'        => 'bi-lightbulb',
+    'Biografija'        => 'bi-person-vcard',
+    'Poezija'           => 'bi-feather',
+    'Dečija knjiga'     => 'bi-balloon-heart',
+];
+@endphp
+
 {{-- ══════════════ HERO ══════════════ --}}
 <section class="gb-hero">
     <div class="container">
@@ -11,7 +24,7 @@
 
             <div class="col-lg-6">
                 <div class="gb-hero-eyebrow">
-                    <i class="bi bi-stars"></i>
+                    <i class="bi bi-book-half"></i>
                     Dobrodošli u Gradsku biblioteku
                 </div>
 
@@ -37,11 +50,14 @@
 
                 <div class="gb-hero-chips">
                     @foreach($categories->sortByDesc('books_count')->take(6) as $cat)
+                    @php $chipIcon = $catIcons[$cat->name] ?? 'bi-bookmark'; @endphp
                     <a href="{{ route('katalog') }}?category_id={{ $cat->id }}" class="gb-chip">
+                        <i class="bi {{ $chipIcon }}"></i>
                         {{ $cat->name }}
                     </a>
                     @endforeach
                     <a href="{{ route('katalog') }}" class="gb-chip gb-chip-all">
+                        <i class="bi bi-grid"></i>
                         Sve kategorije →
                     </a>
                 </div>
@@ -64,33 +80,32 @@
                 </div>
             </div>
 
-            {{-- ──────── Visual: fanned book illustration ──────── --}}
+            {{-- ──────── Visual: dynamic book stack ──────── --}}
             <div class="col-lg-6 d-none d-lg-flex gb-hero-visual">
                 @php
-                    $fanBooks = [
-                        ['dark' => '#1a3020', 'mid' => '#2b4a25', 'light' => '#3d6b35'],
-                        ['dark' => '#5a3a28', 'mid' => '#6b4f3a', 'light' => '#9c7054'],
-                        ['dark' => '#2e4560', 'mid' => '#3d5a7a', 'light' => '#5b7fa8'],
-                        ['dark' => '#8c5520', 'mid' => '#b87333', 'light' => '#d4884a'],
-                        ['dark' => '#38203a', 'mid' => '#4a2b4a', 'light' => '#7a5478'],
-                        ['dark' => '#12293a', 'mid' => '#1a3a4a', 'light' => '#3d6b7a'],
-                        ['dark' => '#2c3812', 'mid' => '#3a4a1a', 'light' => '#5e7030'],
+                    $stackColors = [
+                        ['#1e3a5f', '#2d5a8a'],
+                        ['#0d2137', '#1a3a5c'],
+                        ['#162d4a', '#244d70'],
                     ];
-                    $rotations = [-28, -18, -9, 0, 9, 18, 27];
                 @endphp
-
-                <div class="gb-book-fan-wrap">
-                    @foreach($fanBooks as $i => $fb)
-                    <div class="gb-fan-book" style="
-                        background: linear-gradient(175deg, {{ $fb['mid'] }} 0%, {{ $fb['light'] }} 100%);
-                        transform: rotate({{ $rotations[$i] }}deg);
-                        z-index: {{ count($fanBooks) - abs($rotations[$i] / 9) }};
-                        box-shadow: {{ $rotations[$i] > 0 ? '3px' : '-3px' }} 4px 14px rgba(20,14,8,0.35), inset {{ $rotations[$i] > 0 ? '4px' : '-4px' }} 0 0 rgba(0,0,0,0.28);
-                    ">
-                        <div class="gb-fan-spine" style="
-                            {{ $rotations[$i] >= 0 ? 'left:0;' : 'right:0;left:auto;' }}
-                        "></div>
-                        <div class="gb-fan-page-edge"></div>
+                <div class="gb-book-stack" id="heroBookStack">
+                    @foreach($heroBooks as $i => $heroBook)
+                    @php $sc = $stackColors[$i % 3]; @endphp
+                    <div class="gb-stack-book" data-pos="{{ $i }}">
+                        @if($heroBook->imageUrl())
+                            <img class="gb-stack-img" src="{{ $heroBook->imageUrl() }}" alt="{{ $heroBook->title }}">
+                        @else
+                            @php
+                                $sw = explode(' ', $heroBook->title);
+                                $si = strtoupper($sw[0][0] ?? '?');
+                                if (isset($sw[1])) $si .= strtoupper($sw[1][0]);
+                            @endphp
+                            <div class="gb-stack-ph" style="background: linear-gradient(160deg, {{ $sc[0] }}, {{ $sc[1] }});">
+                                <span class="gb-stack-initials">{{ $si }}</span>
+                                <span class="gb-stack-spine">{{ Str::limit($heroBook->title, 16) }}</span>
+                            </div>
+                        @endif
                     </div>
                     @endforeach
 
@@ -111,6 +126,67 @@
     </div>
 </section>
 
+{{-- ══════════════ POPULAR BOOKS ══════════════ --}}
+@if($popularBooks->isNotEmpty())
+<section class="gb-popular-section">
+    <div class="container">
+        <div class="d-flex align-items-end justify-content-between gb-section-head mb-0">
+            <div>
+                <div class="gb-section-eyebrow">Najpozajmljenije</div>
+                <h2 class="gb-section-title">Najpopularnije knjige</h2>
+                <p style="font-size:.88rem; color:var(--gb-text-muted); margin-top:.35rem; margin-bottom:0;">
+                    Knjige koje se najčešće pozajmljuju
+                </p>
+            </div>
+            <a href="{{ route('katalog') }}" class="gb-section-more mb-1">
+                Sve knjige <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        @php
+            $popularColors = [
+                ['#1e3a5f','#2d5a8a'],['#0d2137','#1a3a5c'],['#162d4a','#244d70'],
+                ['#1a2a4a','#2a4a6a'],['#0e1e3a','#1a3458'],['#142436','#243c5a'],
+            ];
+        @endphp
+
+        <div class="gb-popular-grid mt-4">
+            @foreach($popularBooks as $popBook)
+            @php $pc = $popularColors[$popBook->id % 6]; @endphp
+            <a href="{{ route('knjiga.show', $popBook) }}" class="gb-card">
+                <div class="gb-cover">
+                    @if($popBook->imageUrl())
+                        <img src="{{ $popBook->imageUrl() }}" alt="{{ $popBook->title }}">
+                    @else
+                        @php
+                            $pw = explode(' ', $popBook->title);
+                            $pi = strtoupper($pw[0][0] ?? '?');
+                            if (isset($pw[1])) $pi .= strtoupper($pw[1][0]);
+                        @endphp
+                        <div class="gb-cover-placeholder"
+                             style="background: linear-gradient(150deg, {{ $pc[0] }}, {{ $pc[1] }});">
+                            <span class="gb-cover-initials">{{ $pi }}</span>
+                        </div>
+                    @endif
+                </div>
+                <div class="gb-card-body">
+                    <div class="gb-card-title">{{ $popBook->title }}</div>
+                    <div class="gb-card-author">{{ $popBook->author }}</div>
+                    <div class="gb-card-foot">
+                        <span class="gb-badge-cat">{{ $popBook->category->name }}</span>
+                        <span class="gb-loan-badge">
+                            <i class="bi bi-arrow-repeat"></i>
+                            {{ $popBook->borrowings_count }}×
+                        </span>
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
 {{-- ══════════════ CATEGORIES ══════════════ --}}
 <section class="gb-section gb-section-alt">
     <div class="container">
@@ -126,9 +202,10 @@
 
         <div class="gb-cat-grid mt-4">
             @forelse($categories as $cat)
+            @php $catGridIcon = $catIcons[$cat->name] ?? 'bi-bookmark'; @endphp
             <a href="{{ route('katalog') }}?category_id={{ $cat->id }}" class="gb-cat-card">
                 <div class="gb-cat-icon">
-                    <i class="bi bi-bookmark"></i>
+                    <i class="bi {{ $catGridIcon }}"></i>
                 </div>
                 <div class="gb-cat-name">{{ $cat->name }}</div>
                 <div class="gb-cat-count">{{ $cat->books_count }} {{ $cat->books_count == 1 ? 'knjiga' : ($cat->books_count >= 2 && $cat->books_count <= 4 ? 'knjige' : 'knjiga') }}</div>

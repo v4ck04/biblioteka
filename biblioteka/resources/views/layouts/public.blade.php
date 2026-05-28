@@ -11,6 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/biblioteka.css') }}">
+    {{-- Prevent theme flash: apply saved theme before first paint --}}
+    <script>(function(){try{var t=localStorage.getItem('gb-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}}());</script>
     @stack('head')
 </head>
 <body>
@@ -45,6 +47,10 @@
                 </ul>
 
                 <div class="gb-nav-divider"></div>
+
+                <button class="gb-theme-toggle" id="theme-toggle" aria-label="Promeni temu">
+                    <i class="bi bi-moon" id="theme-icon"></i>
+                </button>
 
                 <a href="{{ route('login') }}" class="gb-nav-admin">
                     <i class="bi bi-lock" style="font-size:.75rem;"></i>
@@ -135,11 +141,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Mobile nav toggle
     document.getElementById('nav-toggle').addEventListener('click', function () {
         document.getElementById('nav-menu').classList.toggle('open');
     });
 </script>
+<script src="{{ asset('js/public-theme.js') }}"></script>
 @stack('scripts')
 </body>
 </html>
