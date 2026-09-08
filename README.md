@@ -1,28 +1,28 @@
-# Biblioteka 
+# Biblioteka — Library Management System
 
-Систем за управљање библиотеком развијен током праксе. Пројекат обухвата **Admin Panel**, **Frontend сајт**, **каталог књига**, **систем позајмица** и **корисничке форме**.
-
----
-
-# О пројекту
-
-„Biblioteka“ је веб апликација намењена лакшем управљању библиотечким системом.
-
-Апликација омогућава:
-
-* администрацију књига и категорија
-* управљање позајмицама
-* праћење активних и закаснелих позајмица
-* претрагу књига
-* преглед каталога
-* захтев за позајмицу
-* frontend приказ библиотеке за кориснике
+A library management system built during an internship. The project covers an **Admin Panel**, a **public-facing frontend**, a **book catalog**, a **borrowing system**, and **user request forms**.
 
 ---
 
-# Технологије
+# About the Project
 
-Пројекат је развијен коришћењем:
+"Biblioteka" is a web application designed to simplify the management of a library system.
+
+The application supports:
+
+* administration of books and categories
+* borrowing management
+* tracking of active and overdue loans
+* book search
+* catalog browsing
+* borrowing requests
+* a public frontend view of the library for end users
+
+---
+
+# Tech Stack
+
+The project was built using:
 
 * **Laravel**
 * **PHP**
@@ -31,130 +31,130 @@
 * **Bootstrap 5**
 * **Visual Studio Code**
 * **WAMP Server**
-* **Claude AI** (истраживање, планирање и помоћ током развоја)
+* **Claude AI** (research, planning, and development assistance)
 
 ---
 
-# Функционалности
+# Features
 
 ## Admin Panel
 
 ### Dashboard
 
-Приказ системских статистика:
+Displays system-wide statistics:
 
-* укупан број књига
-* број категорија
-* активне позајмице
-* закаснеле позајмице
-* брз приступ административним модулима
+* total number of books
+* number of categories
+* active loans
+* overdue loans
+* quick access to admin modules
 
-### Књиге
+### Books
 
-Модул за управљање библиотечким фондом.
+Module for managing the library's collection.
 
-Функционалности:
+Features:
 
-* приказ свих књига
-* додавање књиге
-* измена књиге
-* брисање књиге
-* претрага
-* филтер по категорији
-* контрола броја примерака
+* list all books
+* add a book
+* edit a book
+* delete a book
+* search
+* filter by category
+* copy count control
 
-### Категорије
+### Categories
 
-CRUD функционалности:
+CRUD functionality:
 
-* додавање категорија
-* измена категорија
-* брисање категорија
-* заштита од брисања ако категорија има повезане књиге
+* add categories
+* edit categories
+* delete categories
+* protection against deletion when a category has books linked to it
 
-### Позајмице
+### Borrowings
 
-Систем управљања позајмицама:
+Loan management system:
 
-* активне позајмице
-* закаснеле позајмице
-* историја позајмица
-* нова позајмица
-* враћање књига
-* available copies логика
+* active loans
+* overdue loans
+* borrowing history
+* create a new loan
+* process returns
+* available-copies logic
 
-### Читаоци и захтеви
+### Readers and Requests
 
-* управљање читаоцима
-* обрада захтева корисника
-
----
-
-## Frontend сајт
-
-Кориснички део апликације омогућава једноставно проналажење и преглед књига.
-
-### Претрага
-
-Подржана претрага:
-
-* по наслову
-* по аутору
-* по жанру
-
-### Најновије у фонду
-
-Приказ недавно додатих књига.
-
-### Више из категорије
-
-Предлог сличних књига из исте категорије.
-
-### Каталог
-
-Комплетан каталог библиотеке са организованим приказом података.
+* reader management
+* processing of user requests
 
 ---
 
-## Корисничке форме
+## Frontend Site
 
-### Затражи позајмицу
+The user-facing side of the application makes it easy to find and browse books.
 
-Форма која омогућава кориснику да пошаље захтев за позајмљивање књиге.
+### Search
 
-Садржи:
+Supported search options:
 
-* валидацију поља
-* проверу исправности података
-* повезивање са базом података
+* by title
+* by author
+* by genre
+
+### New Arrivals
+
+Displays recently added books.
+
+### More From This Category
+
+Suggests similar books from the same category.
+
+### Catalog
+
+The complete library catalog with a structured data view.
 
 ---
 
-# База података
+## User Forms
 
-Коришћена је **MySQL** база података.
+### Request a Loan
+
+A form that lets a user submit a request to borrow a book.
+
+Includes:
+
+* field validation
+* input correctness checks
+* database integration
 
 ---
 
-## Табеле
+# Database
+
+The project uses a **MySQL** database.
+
+---
+
+## Tables
 
 ### categories
 
-Чување категорија књига.
+Stores book categories.
 
 ### books
 
-Чување података о књигама.
+Stores book records.
 
 ### borrowings
 
-Чување података о позајмицама.
+Stores loan records.
 
 ---
 
-# Laravel Имплементација
+# Laravel Implementation
 
-## Модели
+## Models
 
 ### Category.php
 
@@ -178,11 +178,11 @@ CRUD функционалности:
 
 ### AdminMiddleware.php
 
-Заштита свих **/admin/** рута.
+Protects all **/admin/** routes.
 
 ---
 
-## Контролери
+## Controllers
 
 ### AuthController
 
@@ -191,49 +191,49 @@ CRUD функционалности:
 
 ### DashboardController
 
-* статистике система
+* system statistics
 
 ### BookController
 
 * CRUD
-* претрага
-* филтери
-* валидација
-* блокада брисања активних позајмица
+* search
+* filters
+* validation
+* blocks deletion of books with active loans
 
 ### BorrowingController
 
-* активне позајмице
-* overdue
-* историја
-* нова позајмица
-* враћање књига
+* active loans
+* overdue loans
+* history
+* new loan
+* returns
 
 ### CategoryController
 
 * CRUD
-* заштита брисања категорија
+* category deletion protection
 
 ---
 
-# Seeder подаци
+# Seeder Data
 
-Пројекат садржи иницијалне податке:
+The project ships with initial data:
 
-* 1 admin корисник
-* 8 категорија
-* 10 књига
-* 9 позајмица
+* 1 admin user
+* 8 categories
+* 10 books
+* 9 loans
 
-  * 2 враћене
-  * 3 активне
+  * 2 returned
+  * 3 active
   * 4 overdue
 
 ---
 
-# Покретање пројекта
+# Getting Started
 
-## 1. Клонирање репозиторијума
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/USERNAME/REPOSITORY.git
@@ -245,7 +245,7 @@ cd biblioteka
 
 ---
 
-## 2. Инсталација зависности
+## 2. Install dependencies
 
 ```bash
 composer install
@@ -253,17 +253,17 @@ composer install
 
 ---
 
-## 3. Креирање .env фајла
+## 3. Create the .env file
 
 ```bash
 copy .env.example .env
 ```
 
-или ручно копирати `.env.example`.
+Or copy `.env.example` manually.
 
 ---
 
-## 4. Генерисање application key-a
+## 4. Generate the application key
 
 ```bash
 php artisan key:generate
@@ -271,17 +271,17 @@ php artisan key:generate
 
 ---
 
-## 5. Подешавање базе
+## 5. Configure the database
 
-Покренути **WAMP Server**.
+Start **WAMP Server**.
 
-Креирати базу:
+Create the database:
 
 ```sql
 biblioteka
 ```
 
-Подесити `.env`:
+Configure `.env`:
 
 ```env
 DB_CONNECTION=mysql
@@ -294,19 +294,19 @@ DB_PASSWORD=
 
 ---
 
-## 6. Import базе
+## 6. Import the database
 
-### Опција 1 — SQL Import
+### Option 1 — SQL import
 
-Importovati:
+Import:
 
 ```txt
 biblioteka.sql
 ```
 
-у phpMyAdmin.
+via phpMyAdmin.
 
-### Опција 2 — Laravel миграције
+### Option 2 — Laravel migrations
 
 ```bash
 php artisan migrate
@@ -318,13 +318,13 @@ php artisan db:seed
 
 ---
 
-## 7. Покретање пројекта
+## 7. Run the project
 
 ```bash
 php artisan serve
 ```
 
-Отворити:
+Open:
 
 ```txt
 http://127.0.0.1:8000
@@ -340,7 +340,7 @@ Email:
 admin@biblioteka.rs
 ```
 
-Лозинка:
+Password:
 
 ```txt
 admin123
@@ -348,15 +348,12 @@ admin123
 
 ---
 
+# Authors
 
+Built during the **W3 LAB internship**.
 
-# Аутори
+Team:
 
-Пројекат реализован током **W3 LAB праксе**.
-
-Тимски рад:
-
-* Admin Panel и функционалности: Владица Ризић
-* Frontend развој: Михајло Стојанвић
-* Редизајн и корисничке форме: Дарко Стевић
-
+* Admin Panel and core functionality: Vladica Rizić
+* Frontend development: Mihajlo Stojanović
+* Redesign and user forms: Darko Stević
